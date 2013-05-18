@@ -1,0 +1,18 @@
+<project>
+ <properties autorotation="0" encrypt="0" fps="60" scaleMode="3" mouseToTouch="1" iosDevice="0" packageName="com.yourdomain.yourapp" logicalHeight="800" logicalWidth="480" mouseTouchOrder="0" retinaDisplay="0" touchToMouse="1" assetsOnly="0" orientation="1" architecture="0">
+  <imageScales/>
+ </properties>
+ <file source="utils.lua"/>
+ <file source="scene.lua"/>
+ <file source="shapes.lua"/>
+ <folder name="images">
+  <file source="player_straight.png"/>
+  <folder name="background">
+   <file source="background/trees.png"/>
+   <file source="background/sky.png"/>
+   <file source="background/hills.png"/>
+   <file source="background/background.png"/>
+  </folder>
+ </folder>
+ <file source="main.lua"/>
+</project>
