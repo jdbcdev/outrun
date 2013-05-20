@@ -1,4 +1,6 @@
 
+-- This class manages all music and sounds in the game
+
 SoundManager = Core.class()
 
 function SoundManager:init()

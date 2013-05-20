@@ -3,6 +3,11 @@
 
 Scene = Core.class(Sprite)
 
+-- Background speed
+local sky_speed    = 0.001
+local hill_speed   = 0.002
+local tree_speed   = 0.003
+
 local rumble_length = 3
 local segment_length = 200
 local position = 0 -- Camera position
@@ -52,7 +57,7 @@ local COLORS = {
 function Scene:init()
 	self.position = position
 	self.road = Sprite.new()
-	self:draw_backgrounds()
+	self:draw_background()
 	self:reset_road()
 	self:draw_player()
 	
@@ -61,10 +66,31 @@ function Scene:init()
 end
 
 -- Draws backgrounds of the game scene
-function Scene:draw_backgrounds()
+function Scene:draw_background()
+	self.bg_sky = bg_sky
 	self:addChild(bg_sky)
+	
+	self.bg_hills = bg_hills
 	self:addChild(bg_hills)
+	
+	self.bg_trees = bg_trees
 	self:addChild(bg_trees)
+end
+
+function Scene:update_background()
+	local bg_sky = self.bg_sky
+	local bg_hills = self.bg_hills
+	local bg_trees = self.bg_trees
+	
+	local curve = self.curve
+	if (curve) then
+		local sky_x = bg_sky:getX() - (sky_speed * curve * speed * 0.5)
+		bg_sky:setX(sky_x)
+		local hills_x = bg_hills:getX() - (hill_speed * curve * speed * 0.5)
+		bg_hills:setX(hills_x)
+		local trees_x = bg_trees:getX() - (tree_speed * curve * speed * 0.5)
+		bg_trees:setX(trees_x)
+	end
 end
 
 -- Draws player car
@@ -99,44 +125,41 @@ function Scene:reset_road()
 	local segments = {}
 		
 	for n=1, road_length do
-		local segment = {}
-		segment.index = n
+		local segment = self:addSegment(n)
 		
-		--Create new segment
-		local p1 = {}
-		p1.world = { z = (n-1) * segment_length, y = 100}
-		p1.camera = {}
-		p1.screen = {}
-		segment.p1 = p1
-		
-		local p2 = {}
-		p2.world = { z = (n) * segment_length, y = 100}
-		p2.camera = {}
-		p2.screen = {}
-		segment.p2 = p2
-		
-		local color = math.floor(n/rumble_length) % 2
-		if (color == 0) then
-			segment.color = COLORS.DARK
-		else
-			segment.color = COLORS.LIGHT
+		-- Hills
+		--[[
+		if (n == 50) then
+			p2.world.y = -600
 		end
 		
-		segment.curve = 0 -- change this for creating curves
+		if (n >= 50 and n <= 100) then
+			local old_segment = segments[n-1]
+			p1.world.y = old_segment.p2.world.y
+			p2.world.y = p1.world.y - 40
+ 		end
+		
+		if (n > 100 and n <= 150) then
+			local old_segment = segments[n-1]
+			p1.world.y = old_segment.p2.world.y
+			p2.world.y = p1.world.y + 50
+ 		end
+		
+		if (n ==151) then
+			local old_segment = segments[n-1]
+			p1.world.y = old_segment.p2.world.y
+			p2.world.y = 0
+		end
+		]]--
+		-- End hills
+		
 		if (n >= 150) and (n<=300) then
-			segment.curve = 4
+			segment.curve = 5
 		end
-		
+
 		if (n >=400 and n<=550) then
 			segment.curve = -5
 		end
-		
-		if (n >=800 and n<=900) then
-			segment.curve = 10
-		end
-		
-		segment.cars = {} -- cars on the road
-		segment.sprites = {} -- trees... on side
 		
 		segments[n] = segment
 	end
@@ -145,7 +168,43 @@ function Scene:reset_road()
 	
 	self.segments = segments
 	--print ("#segments", #segments)
- end
+end
+
+-- Create a new segment with a given curve and y
+function Scene:addSegment(n, curve, y)
+
+	if not (curve)  then
+		curve = 0
+	end
+	
+	local segment = {}
+	segment.index = n
+		
+	local p1 = {}
+	p1.world = { z = (n-1) * segment_length}
+	p1.camera = {}
+	p1.screen = {}
+	segment.p1 = p1
+		
+	local p2 = {}
+	p2.world = { z = (n) * segment_length, y=0}
+	p2.camera = {}
+	p2.screen = {}
+	segment.p2 = p2
+	
+	local color = math.floor(n/rumble_length) % 2
+	if (color == 0) then
+		segment.color = COLORS.DARK
+	else
+		segment.color = COLORS.LIGHT
+	end
+	
+	segment.curve = curve
+	segment.cars = {} -- cars on the road
+	segment.sprites = {} -- trees... on side
+	
+	return segment
+end
 
 -- Find segment including Z coordinate
 function Scene:find_segment(z) 
@@ -186,6 +245,10 @@ function Scene:draw_road()
 	
 	local segments = self.segments
 	local base_segment = self:find_segment(self.position)
+	if (base_segment) then
+		self.curve = base_segment.curve -- used in parallax scrolling
+	end
+	
 	if (base_segment.curve > 0) then
 		self.texture_player = texture_player[2]
 	elseif (base_segment.curve < 0) then

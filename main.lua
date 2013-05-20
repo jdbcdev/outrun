@@ -30,6 +30,7 @@ stage:addChild(scene)
 function update()
 	
 	scene:increase()
+	scene:update_background()
 	scene:draw_road()
 	scene:update_player()
 	
