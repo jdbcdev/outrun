@@ -20,3 +20,30 @@ function Utils.project(p, cameraX, cameraY, cameraZ, camera_depth, road_width)
 	p.screen.w = ceil(p.screen.scale * road_width * width/2)
 	
 end
+
+function Utils.easeIn(a, b, percent)
+	local result = a + (b - a) * math.pow(percent, 2)
+	
+	return result
+end
+
+function Utils.easeOut(a, b, percent)
+
+	local result = a + (b - a) * (1- math.pow(1-percent, 2))
+	
+	return result
+end
+
+function Utils.easeInOut(a, b, percent)
+	local result = a + (b - a) * ((-math.cos(percent*math.pi)/2) + 0.5)
+	
+	return result
+end
+
+function Utils.percentRemaining(n, total) 
+	return (n % total) / total
+end
+
+function Utils.interpolate(a, b, percent)
+	return a + (b-a)*percent 
+end

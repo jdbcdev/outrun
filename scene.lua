@@ -20,6 +20,7 @@ local camera_depth = 1 / math.tan((field_of_view/2) * math.pi/180);
 
 -- player position (Y is constant)
 local playerX = 0
+local playerY = 0
 local playerZ = (camera_height * camera_depth)
 
 local fog_density = 5 --(1-50)
@@ -51,6 +52,12 @@ local COLORS = {
   DARK = { road = "0x696969", grass = "0x009A00", rumble = "0xBBBBBB" },
   START = { road = "0xffffff", grass = "0xffffff", rumble = "0xffffff" },
   FINISH = { road = "0x000000", grass = "0x000000", rumble = "0x000000" }
+}
+
+local ROAD = {
+  LENGTH = { NONE = 0, SHORT = 25, MEDIUM = 50, LONG = 100 },
+  HILL =  { NONE = 0, LOW = 20, MEDIUM = 40, HIGH = 60 },
+  CURVE = { NONE = 0, EASY = 2, MEDIUM = 4, HARD = 6 }
 }
 
 -- Constructor
@@ -118,41 +125,122 @@ function Scene:update_player()
 	end
 end
 
+-- Returns previous Y point value
+function Scene:lastY() 
+  local segments = self.segments
+  
+  if (segments and #segments > 1) then
+	local index = #segments -1
+	return segments[index].p2.world.y
+  else
+	return 0
+  end
+end
+
+-- This function 
+function Scene:addRoad(enter, hold, leave, curve, y) 
+
+	local start_y = self:lastY()
+	local end_y = start_y + y * segment_length
+	
+	local total = enter + hold + leave
+	for i=1, enter do
+		self:addSegment(Utils.easeIn(0, curve, i / enter), Utils.easeInOut(start_y, end_y, i/total));
+	end
+	
+	for i=1, hold do
+		self:addSegment(curve, Utils.easeInOut(start_y, end_y, (enter + i) / total));
+	end
+	
+	for i=1, leave do
+		self:addSegment(Utils.easeInOut(curve, 0, i/leave), Utils.easeInOut(start_y, end_y, (enter + hold + i) / total));
+	end
+end
+
+-- Add a set of segments in a straight road
+function Scene:addStraight(num)
+	local num = num or ROAD.LENGTH.MEDIUM;
+    self:addRoad(num, num, num, 0, 0);
+end
+	
+-- Add a set of segments in a curve road
+function Scene:addCurve(num, curve, height) 
+	local num = num or ROAD.LENGTH.MEDIUM
+	local curve = curve or ROAD.CURVE.MEDIUM;
+    local height = height or ROAD.HILL.NONE;
+    self:addRoad(num, num, num, curve, height);
+end
+
+-- Add a set of segments in a hill
+function Scene:addHill(num, height) 
+    local num = num or ROAD.LENGTH.MEDIUM;
+    local height = height or ROAD.HILL.MEDIUM;
+    self:addRoad(num, num, num, 0, height);
+end
+
+function Scene:addLowRollingHills(num, height)
+	local num = num or ROAD.LENGTH.SHORT
+	local height = height or ROAD.HILL.LOW
+	
+	self:addRoad(num, num, num,  0,  height/2)
+	self:addRoad(num, num, num,  0, -height)
+	self:addRoad(num, num, num,  0,  height)
+	self:addRoad(num, num, num,  0,  0)
+	self:addRoad(num, num, num,  0,  height/2)
+	self:addRoad(num, num, num,  0,  0)
+end
+
+function Scene:addDownhillToEnd(num)
+    num = num or 200;
+    self:addRoad(num, num, num, -ROAD.CURVE.EASY, -self:lastY() / segment_length);
+end
+
+function Scene:addBumps() 
+    self:addRoad(10, 10, 10, 0, 5);
+    self:addRoad(10, 10, 10, 0, -2);
+    self:addRoad(10, 10, 10, 0, -5);
+    self:addRoad(10, 10, 10, 0, 8);
+    self:addRoad(10, 10, 10, 0, 5);
+    self:addRoad(10, 10, 10, 0, -7);
+    self:addRoad(10, 10, 10, 0, 5);
+    self:addRoad(10, 10, 10, 0, -2);
+end
+
 -- Inits road segments
 function Scene:reset_road() 
 	
 	local road_length = 1000 -- For the moment we use this value
-	local segments = {}
-		
-	for n=1, road_length do
-		local segment = self:addSegment(n)
-		
-		-- Hills
-		--[[
-		if (n == 50) then
-			p2.world.y = -600
-		end
-		
-		if (n >= 50 and n <= 100) then
-			local old_segment = segments[n-1]
-			p1.world.y = old_segment.p2.world.y
-			p2.world.y = p1.world.y - 40
- 		end
-		
-		if (n > 100 and n <= 150) then
-			local old_segment = segments[n-1]
-			p1.world.y = old_segment.p2.world.y
-			p2.world.y = p1.world.y + 50
- 		end
-		
-		if (n ==151) then
-			local old_segment = segments[n-1]
-			p1.world.y = old_segment.p2.world.y
-			p2.world.y = 0
+	self.segments = {}
+	
+	local n = 1
+	
+	--while (n < road_length) do
+	--for n=1, road_length do
+	self:addStraight(50)
+	self:addBumps();
+	self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH);
+	--self:addLowRollingHills()
+	--self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH)
+	self:addCurve(100, 6)
+	self:addStraight(50)
+	self:addCurve(100, -5)
+	self:addStraight(300)
+	self:addDownhillToEnd();
+	
+	--self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH);
+	
+	--self:addLowRollingHills(25, 25)
+	
+	--[[
+		if (n == 100) then
+			self:addLowRollingHills(25, 25)
+		else
+			self:addSegment()
 		end
 		]]--
-		-- End hills
 		
+		--n = #self.segments + 1
+		--[[
 		if (n >= 150) and (n<=180) then
 			segment.curve = 2
 		end
@@ -176,34 +264,35 @@ function Scene:reset_road()
 		if (n >=600 and n<=650) then
 			segment.curve = -5
 		end
+		]]--
 		
-		segments[n] = segment
-	end
 		
-	self.track_length = segment_length * #segments;
+	--end 
+		
+	self.track_length = segment_length * #self.segments;
 	
-	self.segments = segments
+	--self.segments = segments
 	--print ("#segments", #segments)
 end
 
 -- Create a new segment with a given curve and y
-function Scene:addSegment(n, curve, y)
+function Scene:addSegment(curve, y)
 
-	if not (curve)  then
-		curve = 0
-	end
+	local n = #self.segments + 1
+	local curve = curve or 0
+	local y = y or 0
 	
 	local segment = {}
 	segment.index = n
 		
 	local p1 = {}
-	p1.world = { z = (n-1) * segment_length}
+	p1.world = { z = (n-1) * segment_length, y = self:lastY()}
 	p1.camera = {}
 	p1.screen = {}
 	segment.p1 = p1
 		
 	local p2 = {}
-	p2.world = { z = (n) * segment_length, y=0}
+	p2.world = { z = (n) * segment_length, y = y}
 	p2.camera = {}
 	p2.screen = {}
 	segment.p2 = p2
@@ -219,7 +308,7 @@ function Scene:addSegment(n, curve, y)
 	segment.cars = {} -- cars on the road
 	segment.sprites = {} -- trees... on side
 	
-	return segment
+	self.segments[n] = segment
 end
 
 -- Find segment including Z coordinate
@@ -261,9 +350,11 @@ function Scene:draw_road()
 	
 	local segments = self.segments
 	local base_segment = self:find_segment(self.position)
-	if (base_segment) then
-		self.curve = base_segment.curve -- used in parallax scrolling
-	end
+	
+	self.curve = base_segment.curve -- used in parallax scrolling
+	local player_percent = Utils.percentRemaining(position+playerZ, segment_length);
+	playerY = Utils.interpolate(base_segment.p1.world.y, base_segment.p2.world.y, player_percent);
+	local looped = base_segment.index < base_segment.index
 	
 	if (base_segment.curve > 0) then
 		self.texture_player = texture_player[2]
@@ -289,10 +380,11 @@ function Scene:draw_road()
 		local p1 = segment.p1
 		local p2 = segment.p2
 		local curve = segment.curve
+		local track_length = self.track_length
 		
 		-- Calculate project of p1 and p2 points that describes a segment
-		Utils.project(p1, (playerX * road_width) - x, camera_height, position, camera_depth, road_width)
-		Utils.project(p2, (playerX * road_width) - x -dx, camera_height, position, camera_depth, road_width)
+		Utils.project(p1, (playerX * road_width) - x, playerY + camera_height, position, camera_depth, road_width)
+		Utils.project(p2, (playerX * road_width) - x -dx, playerY + camera_height, position, camera_depth, road_width)
 		x = x + dx
 		dx = dx + curve
 		
