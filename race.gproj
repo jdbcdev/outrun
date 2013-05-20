@@ -6,7 +6,11 @@
  <file source="scene.lua"/>
  <file source="shapes.lua"/>
  <folder name="images">
-  <file source="player_straight.png"/>
+  <folder name="sprites">
+   <file source="sprites/player_straight.png"/>
+   <file source="sprites/player_right.png"/>
+   <file source="sprites/player_left.png"/>
+  </folder>
   <folder name="background">
    <file source="background/trees.png"/>
    <file source="background/sky.png"/>

@@ -31,7 +31,9 @@ local texture_trees = Texture.new("images/background/trees.png")
 local bg_trees = Bitmap.new(texture_trees)
 
 -- Player and cars
-local texture_player = Texture.new("images/player_straight.png")
+local texture_player = {Texture.new("images/sprites/player_straight.png"),
+						Texture.new("images/sprites/player_right.png"),
+						Texture.new("images/sprites/player_left.png")}
 
 local COLORS = {
   SKY = "0x72D7EE",
@@ -61,8 +63,9 @@ end
 
 -- Draws player car
 function Scene:draw_player()
-	
-	local player = Bitmap.new(texture_player)
+		
+	self.texture_player = texture_player[1] -- straight
+	local player = Bitmap.new(self.texture_player)
 	player:setScale(2)
 	local posX = (application:getContentWidth() - player:getWidth()) * 0.5
 	local posY = application:getContentHeight() - player:getHeight() - 5
@@ -75,6 +78,7 @@ end
 function Scene:update_player()
 
 	local player = self.player
+	player:setTexture(self.texture_player)
 	
 	if (player and self:contains(player)) then
 		self:removeChild(player)
@@ -114,11 +118,15 @@ function Scene:reset_road()
 		
 		segment.curve = 0 -- change this for creating curves
 		if (n >= 150) and (n<=300) then
-			segment.curve = 5
+			segment.curve = 4
 		end
 		
 		if (n >=400 and n<=550) then
 			segment.curve = -5
+		end
+		
+		if (n >=800 and n<=900) then
+			segment.curve = 10
 		end
 		
 		segment.cars = {} -- cars on the road
@@ -172,6 +180,14 @@ function Scene:draw_road()
 	
 	local segments = self.segments
 	local base_segment = self:find_segment(self.position)
+	if (base_segment.curve > 0) then
+		self.texture_player = texture_player[2]
+	elseif (base_segment.curve < 0) then
+		self.texture_player = texture_player[3]
+	else
+		self.texture_player = texture_player[1]
+	end
+	
 	local maxy = application:getContentHeight()
 	local num_segments = #segments
 	
