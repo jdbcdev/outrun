@@ -6,7 +6,7 @@ Scene = Core.class(Sprite)
 local rumble_length = 3
 local segment_length = 200
 local position = 0 -- Camera position
-local draw_distance = 80
+local draw_distance = 100
 local road_width = 1200
 local field_of_view = 100
 
@@ -18,7 +18,7 @@ local playerX = 0
 local playerZ = (camera_height * camera_depth)
 
 local fog_density = 5 --(1-50)
-local speed = 150
+local speed = 200
 
 -- Background, hills and trees
 local texture_sky = Texture.new("images/background/sky.png")
@@ -65,7 +65,7 @@ function Scene:draw_player()
 	local player = Bitmap.new(texture_player)
 	player:setScale(2)
 	local posX = (application:getContentWidth() - player:getWidth()) * 0.5
-	local posY = application:getContentHeight() - player:getHeight() - 10
+	local posY = application:getContentHeight() - player:getHeight() - 5
 	player:setPosition(posX, posY)
 	self.player = player
 	self:addChild(player)
@@ -94,13 +94,13 @@ function Scene:reset_road()
 		
 		--Create new segment
 		local p1 = {}
-		p1.world = { z = (n-1) * segment_length}
+		p1.world = { z = (n-1) * segment_length, y = 100}
 		p1.camera = {}
 		p1.screen = {}
 		segment.p1 = p1
 		
 		local p2 = {}
-		p2.world = { z = (n) * segment_length}
+		p2.world = { z = (n) * segment_length, y = 100}
 		p2.camera = {}
 		p2.screen = {}
 		segment.p2 = p2
@@ -112,13 +112,25 @@ function Scene:reset_road()
 			segment.color = COLORS.LIGHT
 		end
 		
+		segment.curve = 0 -- change this for creating curves
+		if (n >= 150) and (n<=300) then
+			segment.curve = 5
+		end
+		
+		if (n >=400 and n<=550) then
+			segment.curve = -5
+		end
+		
+		segment.cars = {} -- cars on the road
+		segment.sprites = {} -- trees... on side
+		
 		segments[n] = segment
 	end
 		
 	self.track_length = segment_length * #segments;
 	
 	self.segments = segments
-	print ("#segments", #segments)
+	--print ("#segments", #segments)
  end
 
 -- Find segment including Z coordinate
@@ -166,24 +178,29 @@ function Scene:draw_road()
 	--local t1= os.clock()
 	
 	local j = 1
+	local x = 0
+	local dx = 0.1
+	
 	for i = 0, draw_distance -1 do
 		local index = (base_segment.index + i) % num_segments
 					
 		local segment = segments[index + 1]
 		local p1 = segment.p1
 		local p2 = segment.p2
+		local curve = segment.curve
 		
 		-- Calculate project of p1 and p2 points that describes a segment
-		Utils.project(p1, playerX * road_width, camera_height, position, camera_depth, road_width)
-		Utils.project(p2, playerX * road_width, camera_height, position, camera_depth, road_width)
-			
+		Utils.project(p1, (playerX * road_width) - x, camera_height, position, camera_depth, road_width)
+		Utils.project(p2, (playerX * road_width) - x -dx, camera_height, position, camera_depth, road_width)
+		x = x + dx
+		dx = dx + curve
+		
 		--print ("camera_depth ", camera_depth)
 				
 		if not (segment.p1.camera.z <= camera_depth or -- behind us
 			segment.p2.screen.y >= maxy) then       -- clip by (already rendered) segment
 	
 			--local t1= os.clock()
-			--print (j)
 			
 			local sprite_segment = Segment.new(
 							p1.screen.x,

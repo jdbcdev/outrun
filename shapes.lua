@@ -7,6 +7,7 @@ Rectangle = Core.class(Shape)
 local width = application:getContentWidth()
 local height = application:getContentHeight()
 
+-- Constructor 
 function Rectangle:init(x, y, width, height, color)
 
 	self:setFillStyle(Shape.SOLID, color.grass)
@@ -21,6 +22,7 @@ end
 
 Polygon = Core.class(Shape)
 
+-- Constructor
 function Polygon:init(x1, y1, x2, y2, x3, y3, x4, y4, color)
 
 	self:setFillStyle(Shape.SOLID, color) 
@@ -35,16 +37,23 @@ end
 
 Segment = Core.class(Sprite) -- rectangles and polygons
 
+-- Constructor
 function Segment:init (x1, y1, w1, x2, y2, w2, fog, color) 
-		
+			
+	--local t1= os.clock()
+	
 	local r1 = Segment.rumbleWidth(w1)
 	local r2 = Segment.rumbleWidth(w2)
 	local l1 = Segment.laneMarkerWidth(w1)
 	local l2 = Segment.laneMarkerWidth(w2)
 	
+	--local t2 = os.clock() - t1
+	--print (t2)
+	
 	local width = application:getContentWidth()
 	local rect = Rectangle.new(0, y2, width, y1 - y2, color)
 	self:addChild(rect)
+	
 	local polygon1 = Polygon.new(x1-w1-r1, y1, x1-w1, y1, x2-w2, y2, x2-w2-r2, y2, color.rumble)
 	self:addChild(polygon1)
 	local polygon2 = Polygon.new(x1+w1+r1, y1, x1+w1, y1, x2+w2, y2, x2+w2+r2, y2, color.rumble)

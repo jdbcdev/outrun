@@ -6,10 +6,6 @@
 application:setOrientation(Application.LANDSCAPE_LEFT)
 --application:setBackgroundColor(0xff0000)
 
--- Game variables
-local fps = 60 -- how many 'update' frames per second
-local step = 1/fps; 
-
 local track_length
 
 -- Create a game scene child of stage
@@ -41,12 +37,12 @@ end
 
 function onClick(event)
 	local player = scene.player
-	local centerX = application:getContentWidth()
+	local centerX = application:getContentWidth() * 0.5
 	local posX = player:getX()
 	if (event.x < centerX) then
-		posX = posX - 2
+		posX = posX - 10
 	else
-		posX = posX + 2
+		posX = posX + 10
 	end
 	
 	player:setX(posX)
@@ -55,5 +51,5 @@ end
 -- Add event listener for loop game
 stage:addEventListener(Event.ENTER_FRAME, update)
 
---stage:addEventListener(Event.MOUSE_DOWN, onClick)
+-- stage:addEventListener(Event.MOUSE_DOWN, onClick)
 
