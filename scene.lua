@@ -33,7 +33,10 @@ local bg_trees = Bitmap.new(texture_trees)
 -- Player and cars
 local texture_player = {Texture.new("images/sprites/player_straight.png"),
 						Texture.new("images/sprites/player_right.png"),
-						Texture.new("images/sprites/player_left.png")}
+						Texture.new("images/sprites/player_left.png"),
+						Texture.new("images/sprites/player_uphill_straight.png"),
+						Texture.new("images/sprites/player_uphill_right.png"),
+						Texture.new("images/sprites/player_uphill_left.png")}
 
 local COLORS = {
   SKY = "0x72D7EE",
@@ -52,6 +55,9 @@ function Scene:init()
 	self:draw_backgrounds()
 	self:reset_road()
 	self:draw_player()
+	
+	local soundmanager = SoundManager.new()
+	soundmanager:play()
 end
 
 -- Draws backgrounds of the game scene
