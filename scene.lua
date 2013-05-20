@@ -153,11 +153,27 @@ function Scene:reset_road()
 		]]--
 		-- End hills
 		
-		if (n >= 150) and (n<=300) then
+		if (n >= 150) and (n<=180) then
+			segment.curve = 2
+		end
+		
+		if (n >= 181) and (n<=200) then
 			segment.curve = 5
 		end
+		
+		if (n >= 201) and (n<=250) then
+			segment.curve = 10
+		end
+		
+		if (n >= 251) and (n<=280) then
+			segment.curve = 5
+		end
+		
+		if (n >= 281) and (n<=300) then
+			segment.curve = 2
+		end
 
-		if (n >=400 and n<=550) then
+		if (n >=600 and n<=650) then
 			segment.curve = -5
 		end
 		
