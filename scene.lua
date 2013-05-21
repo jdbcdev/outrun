@@ -12,7 +12,7 @@ local rumble_length = 3
 local segment_length = 200
 local position = 0 -- Camera position
 local draw_distance = 100
-local road_width = 1200
+local road_width = 1400
 local field_of_view = 100
 
 local camera_height = 900
@@ -195,6 +195,14 @@ function Scene:addDownhillToEnd(num)
     self:addRoad(num, num, num, -ROAD.CURVE.EASY, -self:lastY() / segment_length);
 end
 
+function Scene:addSCurves()
+    self:addRoad(ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, -ROAD.CURVE.EASY, ROAD.HILL.NONE);
+    self:addRoad(ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.CURVE.MEDIUM, ROAD.HILL.MEDIUM);
+    self:addRoad(ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.CURVE.EASY, -ROAD.HILL.LOW);
+    self:addRoad(ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, -ROAD.CURVE.EASY, ROAD.HILL.MEDIUM);
+    self:addRoad(ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, ROAD.LENGTH.MEDIUM, -ROAD.CURVE.MEDIUM, -ROAD.HILL.MEDIUM);
+end
+
 function Scene:addBumps() 
     self:addRoad(10, 10, 10, 0, 5);
     self:addRoad(10, 10, 10, 0, -2);
@@ -214,65 +222,20 @@ function Scene:reset_road()
 	
 	local n = 1
 	
-	--while (n < road_length) do
-	--for n=1, road_length do
-	self:addStraight(50)
-	self:addBumps();
-	self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH);
-	--self:addLowRollingHills()
+	self:addStraight(100)
+	self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH)
+	--self:addSCurves()
+	--self:addBumps();
+	--self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH);
+	self:addLowRollingHills()
 	--self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH)
-	self:addCurve(100, 6)
+	self:addCurve(200, 6)
 	self:addStraight(50)
 	self:addCurve(100, -5)
-	self:addStraight(300)
-	self:addDownhillToEnd();
-	
-	--self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH);
-	
-	--self:addLowRollingHills(25, 25)
-	
-	--[[
-		if (n == 100) then
-			self:addLowRollingHills(25, 25)
-		else
-			self:addSegment()
-		end
-		]]--
+	self:addStraight(100)
+	--self:addDownhillToEnd();
 		
-		--n = #self.segments + 1
-		--[[
-		if (n >= 150) and (n<=180) then
-			segment.curve = 2
-		end
-		
-		if (n >= 181) and (n<=200) then
-			segment.curve = 5
-		end
-		
-		if (n >= 201) and (n<=250) then
-			segment.curve = 10
-		end
-		
-		if (n >= 251) and (n<=280) then
-			segment.curve = 5
-		end
-		
-		if (n >= 281) and (n<=300) then
-			segment.curve = 2
-		end
-
-		if (n >=600 and n<=650) then
-			segment.curve = -5
-		end
-		]]--
-		
-		
-	--end 
-		
-	self.track_length = segment_length * #self.segments;
-	
-	--self.segments = segments
-	--print ("#segments", #segments)
+	self.track_length = segment_length * #self.segments
 end
 
 -- Create a new segment with a given curve and y
@@ -352,11 +315,16 @@ function Scene:draw_road()
 	local base_segment = self:find_segment(self.position)
 	
 	self.curve = base_segment.curve -- used in parallax scrolling
+	
+	--local base_percent   = Utils.percentRemaining(position, segment_length);
 	local player_percent = Utils.percentRemaining(position+playerZ, segment_length);
 	playerY = Utils.interpolate(base_segment.p1.world.y, base_segment.p2.world.y, player_percent);
 	local looped = base_segment.index < base_segment.index
 	
-	if (base_segment.curve > 0) then
+	local climb = base_segment.p2.world.y - base_segment.p1.world.y
+	if (climb > 0) then
+		self.texture_player = texture_player[4]
+	elseif(base_segment.curve > 0) then
 		self.texture_player = texture_player[2]
 	elseif (base_segment.curve < 0) then
 		self.texture_player = texture_player[3]
@@ -371,11 +339,11 @@ function Scene:draw_road()
 	
 	local j = 1
 	local x = 0
-	local dx = 0.1
+	local dx = 0
 	
-	for i = 0, draw_distance -1 do
+	for i = 1, draw_distance -1 do
 		local index = (base_segment.index + i) % num_segments
-					
+		
 		local segment = segments[index + 1]
 		local p1 = segment.p1
 		local p2 = segment.p2
@@ -391,6 +359,7 @@ function Scene:draw_road()
 		--print ("camera_depth ", camera_depth)
 				
 		if not (segment.p1.camera.z <= camera_depth or -- behind us
+			segment.p2.screen.y >= segment.p1.screen.y or -- back face cull
 			segment.p2.screen.y >= maxy) then       -- clip by (already rendered) segment
 	
 			--local t1= os.clock()
@@ -407,7 +376,7 @@ function Scene:draw_road()
 			road:addChild(sprite_segment)
 			j = j + 1
 			
-			maxy = segment.p2.screen.y
+			maxy = segment.p1.screen.y
 			
 			--local t2 = os.clock() - t1
 			--print (t2)

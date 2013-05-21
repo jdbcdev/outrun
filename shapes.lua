@@ -50,7 +50,7 @@ function Segment:init (x1, y1, w1, x2, y2, w2, fog, color)
 	--local t2 = os.clock() - t1
 	--print (t2)
 	
-	local width = application:getContentWidth()
+	--local width = application:getContentWidth()
 	local rect = Rectangle.new(0, y2, width, y1 - y2, color)
 	self:addChild(rect)
 	
