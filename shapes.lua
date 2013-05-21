@@ -2,36 +2,42 @@
 local lanes = 3
 
 -- Simple shapes (rectangles and polygons)
-Rectangle = Core.class(Shape)
+Rectangle = Core.class(Mesh)
 
 local width = application:getContentWidth()
 local height = application:getContentHeight()
 
 -- Constructor 
 function Rectangle:init(x, y, width, height, color)
-
-	self:setFillStyle(Shape.SOLID, color.grass)
-	self:beginPath(Shape.NON_ZERO)
-	self:moveTo(x, y)
-	self:lineTo(x + width, y)
-	self:lineTo(x + width, y + height)
-	self:lineTo(x, y + height)
-	self:lineTo(x, y)
-	self:endPath()
+	
+	local x1 = x + width
+	local y1 = y + height
+	
+	self:setVertices(1, x, y,
+					 2, x1, y,
+					 3, x1, y1,
+					 4, x, y1)
+	
+	self:setIndexArray(1, 2, 3,
+					   1, 3, 4)
+	
+	self:setColorArray(color.grass,1, color.grass, 1, color.grass, 1, color.grass, 1)				
 end
 
-Polygon = Core.class(Shape)
+Polygon = Core.class(Mesh)
 
 -- Constructor
 function Polygon:init(x1, y1, x2, y2, x3, y3, x4, y4, color)
-
-	self:setFillStyle(Shape.SOLID, color) 
-	self:beginPath(Shape.NON_ZERO)
-	self:moveTo(x1, y1)
-	self:lineTo(x2, y2)
-	self:lineTo(x3, y3)
-	self:lineTo(x4, y4)
-	self:endPath()
+		
+	self:setVertices(1, x1, y1,
+					 2, x2, y2,
+					 3, x3, y3,
+					 4, x4, y4)
+	
+	self:setIndexArray(1, 2, 3,
+					   1, 3, 4)
+	
+	self:setColorArray(color, 1, color, 1, color, 1, color, 1)
 end
 
 
