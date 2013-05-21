@@ -3,6 +3,7 @@
 -- https://github.com/jakesgordon/javascript-racer/
 -- http://codeincomplete.com/posts/2012/6/22/javascript_racer/
 
+application:setKeepAwake(true)
 application:setOrientation(Application.LANDSCAPE_LEFT)
 --application:setBackgroundColor(0xff0000)
 

@@ -12,7 +12,7 @@ local rumble_length = 3
 local segment_length = 200
 local position = 0 -- Camera position
 local draw_distance = 100
-local road_width = 1400
+local road_width = 1200
 local field_of_view = 100
 
 local camera_height = 900
@@ -67,6 +67,10 @@ function Scene:init()
 	self:draw_background()
 	self:reset_road()
 	self:draw_player()
+	
+	local color = {grass= 0x00BFFF}
+	--local rect = Rectangle.new(0, 250, application:getContentWidth(), application:getContentHeight(), color)
+	--self:addChild(rect)
 	
 	local soundmanager = SoundManager.new()
 	soundmanager:play()
