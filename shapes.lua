@@ -29,7 +29,7 @@ function Segment:init (x1, y1, w1, x2, y2, w2, fog, color)
 	--local rect = Rectangle.new(0, y2, width, y1 - y2, color)
 	--self:addChild(rect)
 	
-	self:set(0, y1, width,  y1, width, y2, 0, y2, color.grass)
+	self:set(0, y1, width,  y1, width, y2, 0, y2, color.sand)
 	
 	--[[
 	local polygon1 = Polygon.new(x1-w1-r1, y1, x1-w1, y1, x2-w2, y2, x2-w2-r2, y2, color.rumble)

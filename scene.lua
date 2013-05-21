@@ -48,8 +48,8 @@ local COLORS = {
   SKY = "0x72D7EE",
   TREE = "0x005108",
   FOG = "0x005108",
-  LIGHT = { road = "0x6B6B6B", grass = "0x10AA10", rumble = "0x555555", lane = "0xCCCCCC" },
-  DARK = { road = "0x696969", grass = "0x009A00", rumble = "0xBBBBBB" },
+  LIGHT = { road = "0x6B6B6B", grass = "0x10AA10", rumble = "0x555555", lane = "0xCCCCCC", sand ="0xFFD39B"},
+  DARK = { road = "0x696969", grass = "0x009A00", rumble = "0xBBBBBB", sand ="0xDEB887" },
   START = { road = "0xffffff", grass = "0xffffff", rumble = "0xffffff" },
   FINISH = { road = "0x000000", grass = "0x000000", rumble = "0x000000" }
 }
@@ -141,7 +141,7 @@ function Scene:lastY()
   end
 end
 
--- This function 
+-- This function add a road segment
 function Scene:addRoad(enter, hold, leave, curve, y) 
 
 	local start_y = self:lastY()
@@ -227,7 +227,7 @@ function Scene:reset_road()
 	local n = 1
 	
 	self:addStraight(100)
-	self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH)
+	self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.MEDIUM)
 	--self:addSCurves()
 	--self:addBumps();
 	--self:addHill(ROAD.LENGTH.MEDIUM, ROAD.HILL.HIGH);
@@ -312,6 +312,11 @@ function Scene:draw_road()
 	local road_width = road_width
 	local old_road = self.road
 	
+	-- Remove old road
+	if (old_road and self:contains(old_road)) then
+		self:removeChild(old_road)
+	end
+	
 	-- Redraw a new road sprite
 	local road = Sprite.new()
 	
@@ -320,7 +325,6 @@ function Scene:draw_road()
 	
 	self.curve = base_segment.curve -- used in parallax scrolling
 	
-	--local base_percent   = Utils.percentRemaining(position, segment_length);
 	local player_percent = Utils.percentRemaining(position+playerZ, segment_length);
 	playerY = Utils.interpolate(base_segment.p1.world.y, base_segment.p2.world.y, player_percent);
 	local looped = base_segment.index < base_segment.index
