@@ -5,9 +5,13 @@ Utils = {}
 local width = application:getContentWidth()
 local height = application:getContentHeight()
 
-function Utils.project(p, cameraX, cameraY, cameraZ, camera_depth, road_width)
+-- Math functions
+local cos = math.cos
+local pow = math.pow
+local ceil = math.ceil
+local pi = math.pi
 
-	local ceil = math.ceil
+function Utils.project(p, cameraX, cameraY, cameraZ, camera_depth, road_width)
 	
 	p.camera.x = (p.world.x or 0) - cameraX
 	p.camera.y = (p.world.y or 0) - cameraY
@@ -17,25 +21,25 @@ function Utils.project(p, cameraX, cameraY, cameraZ, camera_depth, road_width)
 	p.screen.scale = scale
 	p.screen.x = ceil((width / 2) + (scale * p.camera.x * width / 2))
 	p.screen.y = ceil((height / 2) - (scale * p.camera.y * height / 2))
-	p.screen.w = ceil(p.screen.scale * road_width * width/2)
+	p.screen.w = ceil(scale * road_width * width/2)
 	
 end
 
 function Utils.easeIn(a, b, percent)
-	local result = a + (b - a) * math.pow(percent, 2)
+	local result = a + (b - a) * pow(percent, 2)
 	
 	return result
 end
 
 function Utils.easeOut(a, b, percent)
 
-	local result = a + (b - a) * (1- math.pow(1-percent, 2))
+	local result = a + (b - a) * (1- pow(1-percent, 2))
 	
 	return result
 end
 
 function Utils.easeInOut(a, b, percent)
-	local result = a + (b - a) * ((-math.cos(percent*math.pi)/2) + 0.5)
+	local result = a + (b - a) * ((-cos(percent * pi)/2) + 0.5)
 	
 	return result
 end

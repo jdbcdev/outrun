@@ -3,6 +3,17 @@
 
 Scene = Core.class(Sprite)
 
+local width = application:getContentWidth()
+local height = application:getContentHeight()
+
+-- Math functions
+local tan = math.tan
+local pi = math.pi
+local floor = math.floor
+local ceil = math.ceil
+local pow = math.pow
+local cos = math.cos
+
 -- Background speed
 local sky_speed    = 0.001
 local hill_speed   = 0.002
@@ -16,7 +27,7 @@ local road_width = 1200
 local field_of_view = 100
 
 local camera_height = 900
-local camera_depth = 1 / math.tan((field_of_view/2) * math.pi/180);
+local camera_depth = 1 / tan((field_of_view/2) * pi/180);
 
 -- player position (Y is constant)
 local playerX = 0
@@ -37,12 +48,14 @@ local texture_trees = Texture.new("images/background/trees.png")
 local bg_trees = Bitmap.new(texture_trees)
 
 -- Player and cars
-local texture_player = {Texture.new("images/sprites/player_straight.png"),
-						Texture.new("images/sprites/player_right.png"),
-						Texture.new("images/sprites/player_left.png"),
-						Texture.new("images/sprites/player_uphill_straight.png"),
-						Texture.new("images/sprites/player_uphill_right.png"),
-						Texture.new("images/sprites/player_uphill_left.png")}
+local texture_player = {Texture.new("images/sprites/player_straight.png", true),
+						Texture.new("images/sprites/player_right.png", true),
+						Texture.new("images/sprites/player_left.png", true),
+						Texture.new("images/sprites/player_uphill_straight.png", true),
+						Texture.new("images/sprites/player_uphill_right.png", true),
+						Texture.new("images/sprites/player_uphill_left.png", true)}
+
+local texture_panel = Texture.new("images/sprites/open_house_sign_0.png", true)
 
 local COLORS = {
   SKY = "0x72D7EE",
@@ -59,6 +72,47 @@ local ROAD = {
   HILL =  { NONE = 0, LOW = 20, MEDIUM = 40, HIGH = 60 },
   CURVE = { NONE = 0, EASY = 2, MEDIUM = 4, HARD = 6 }
 }
+
+local function project(p, cameraX, cameraY, cameraZ, camera_depth, road_width)
+	
+	p.camera.x = (p.world.x or 0) - cameraX
+	p.camera.y = (p.world.y or 0) - cameraY
+	p.camera.z = (p.world.z or 0) - cameraZ
+	
+	local scale = camera_depth / p.camera.z
+	p.screen.scale = scale
+	p.screen.x = ceil((width / 2) + (scale * p.camera.x * width / 2))
+	p.screen.y = ceil((height / 2) - (scale * p.camera.y * height / 2))
+	p.screen.w = ceil(scale * road_width * width/2)
+	
+end
+
+local function easeIn(a, b, percent)
+	local result = a + (b - a) * pow(percent, 2)
+	
+	return result
+end
+
+local function easeOut(a, b, percent)
+
+	local result = a + (b - a) * (1- pow(1-percent, 2))
+	
+	return result
+end
+
+local function easeInOut(a, b, percent)
+	local result = a + (b - a) * ((-cos(percent * pi)/2) + 0.5)
+	
+	return result
+end
+
+local function percentRemaining(n, total) 
+	return (n % total) / total
+end
+
+local function interpolate(a, b, percent)
+	return a + (b-a)*percent 
+end
 
 -- Constructor
 function Scene:init()
@@ -148,16 +202,17 @@ function Scene:addRoad(enter, hold, leave, curve, y)
 	local end_y = start_y + y * segment_length
 	
 	local total = enter + hold + leave
+	local i
 	for i=1, enter do
-		self:addSegment(Utils.easeIn(0, curve, i / enter), Utils.easeInOut(start_y, end_y, i/total));
+		self:addSegment(easeIn(0, curve, i / enter), easeInOut(start_y, end_y, i/total));
 	end
 	
 	for i=1, hold do
-		self:addSegment(curve, Utils.easeInOut(start_y, end_y, (enter + i) / total));
+		self:addSegment(curve, easeInOut(start_y, end_y, (enter + i) / total));
 	end
 	
 	for i=1, leave do
-		self:addSegment(Utils.easeInOut(curve, 0, i/leave), Utils.easeInOut(start_y, end_y, (enter + hold + i) / total));
+		self:addSegment(easeInOut(curve, 0, i/leave), easeInOut(start_y, end_y, (enter + hold + i) / total));
 	end
 end
 
@@ -240,11 +295,14 @@ function Scene:reset_road()
 	--self:addDownhillToEnd();
 		
 	self.track_length = segment_length * #self.segments
+	
+	--print("segment_length", segment_length)
+	--print("track_length", self.track_length)
 end
 
 -- Create a new segment with a given curve and y
 function Scene:addSegment(curve, y)
-
+	
 	local n = #self.segments + 1
 	local curve = curve or 0
 	local y = y or 0
@@ -264,7 +322,7 @@ function Scene:addSegment(curve, y)
 	p2.screen = {}
 	segment.p2 = p2
 	
-	local color = math.floor(n/rumble_length) % 2
+	local color = floor(n/rumble_length) % 2
 	if (color == 0) then
 		segment.color = COLORS.DARK
 	else
@@ -273,9 +331,10 @@ function Scene:addSegment(curve, y)
 	
 	segment.curve = curve
 	segment.cars = {} -- cars on the road
-	segment.sprites = {} -- trees... on side
+	segment.sprites = { Bitmap.new(texture_panel) } -- trees... on side
 	
-	self.segments[n] = segment
+	--self.segments[n] = segment
+	table.insert(self.segments, segment)
 end
 
 -- Find segment including Z coordinate
@@ -283,7 +342,7 @@ function Scene:find_segment(z)
 	
 	local segments = self.segments
 	local num_segments = #segments
-	local index = math.floor(z/segment_length) % num_segments
+	local index = floor(z/segment_length) % num_segments
 	
 	return segments[index + 1]
 end
@@ -325,8 +384,8 @@ function Scene:draw_road()
 	
 	self.curve = base_segment.curve -- used in parallax scrolling
 	
-	local player_percent = Utils.percentRemaining(position+playerZ, segment_length);
-	playerY = Utils.interpolate(base_segment.p1.world.y, base_segment.p2.world.y, player_percent);
+	local player_percent = percentRemaining(position+playerZ, segment_length);
+	playerY = interpolate(base_segment.p1.world.y, base_segment.p2.world.y, player_percent);
 	local looped = base_segment.index < base_segment.index
 	
 	local climb = base_segment.p2.world.y - base_segment.p1.world.y
@@ -349,6 +408,7 @@ function Scene:draw_road()
 	local x = 0
 	local dx = 0
 	
+	local i
 	for i = 1, draw_distance -1 do
 		local index = (base_segment.index + i) % num_segments
 		
@@ -359,16 +419,16 @@ function Scene:draw_road()
 		local track_length = self.track_length
 		
 		-- Calculate project of p1 and p2 points that describes a segment
-		Utils.project(p1, (playerX * road_width) - x, playerY + camera_height, position, camera_depth, road_width)
-		Utils.project(p2, (playerX * road_width) - x -dx, playerY + camera_height, position, camera_depth, road_width)
+		project(p1, (playerX * road_width) - x, playerY + camera_height, position, camera_depth, road_width)
+		project(p2, (playerX * road_width) - x -dx, playerY + camera_height, position, camera_depth, road_width)
 		x = x + dx
 		dx = dx + curve
 		
 		--print ("camera_depth ", camera_depth)
-				
-		if not (segment.p1.camera.z <= camera_depth or -- behind us
-			segment.p2.screen.y >= segment.p1.screen.y or -- back face cull
-			segment.p2.screen.y >= maxy) then       -- clip by (already rendered) segment
+		
+		if not (p1.camera.z <= camera_depth or -- behind us
+			p2.screen.y >= p1.screen.y or -- back face cull
+			p2.screen.y >= maxy) then       -- clip by (already rendered) segment
 	
 			--local t1= os.clock()
 			
@@ -384,7 +444,13 @@ function Scene:draw_road()
 			road:addChild(sprite_segment)
 			j = j + 1
 			
-			maxy = segment.p1.screen.y
+			maxy = p1.screen.y
+			
+			-- Draw panel sprite
+			--local panel = segment.sprites[1]
+			--panel:setScale(p1.screen.scale)
+			--panel:setPosition(p1.screen.x - 25, p1.screen.y)
+			--road:addChild(panel)
 			
 			--local t2 = os.clock() - t1
 			--print (t2)
@@ -395,12 +461,6 @@ function Scene:draw_road()
 	end
 	
 	self:addChild(road)
-	
-	-- Remove old road
-	if (old_road and self:contains(old_road)) then
-		self:removeChild(old_road)
-	end
-	
 	self.road = road
 	
 	--print ("road children ", self.road:getNumChildren()) -- segments

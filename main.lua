@@ -27,6 +27,22 @@ Render.segments = {}
 
 stage:addChild(scene)
 
+local frame = 0
+local timer = os.timer()
+local floor = math.floor
+--local fps = TextField.new(TTFont.new("fonts/Akashi.ttf", 13), "")
+
+local function displayFps()
+	frame = frame + 1
+	if frame == 60 then
+		local currentTimer = os.timer()
+		print(floor(60 / (currentTimer - timer)))
+		--fps:setText(floor(60 / (currentTimer - timer)))
+		frame = 0
+		timer = currentTimer	
+	end
+end
+
 -- Game loop
 function update()
 	
@@ -35,6 +51,7 @@ function update()
 	scene:draw_road()
 	scene:update_player()
 	
+	--displayFps()
 end
 
 function onClick(event)

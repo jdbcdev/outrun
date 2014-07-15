@@ -1,16 +1,17 @@
 <project>
- <properties autorotation="0" encrypt="0" fps="60" scaleMode="3" mouseToTouch="1" iosDevice="0" packageName="com.yourdomain.yourapp" logicalHeight="800" logicalWidth="480" mouseTouchOrder="0" retinaDisplay="0" touchToMouse="1" assetsOnly="0" orientation="1" architecture="0">
+ <properties autorotation="0" encryptAssets="0" fps="60" scaleMode="3" mouseToTouch="1" iosDevice="0" packageName="es.jdbc.race" logicalHeight="800" logicalWidth="480" mouseTouchOrder="0" encryptCode="1" retinaDisplay="0" touchToMouse="1" assetsOnly="0" orientation="1" architecture="1">
   <imageScales/>
  </properties>
+ <folder name="fonts">
+  <file source="fonts/Akashi.ttf"/>
+ </folder>
+ <file source="testffi.lua"/>
  <folder name="music">
   <file source="music/racer.mp3"/>
  </folder>
- <file source="soundmanager.lua"/>
- <file source="utils.lua"/>
- <file source="scene.lua"/>
- <file source="shapes.lua"/>
  <folder name="images">
   <folder name="sprites">
+   <file source="sprites/open_house_sign_0.png"/>
    <file source="sprites/player_uphill_straight.png"/>
    <file source="sprites/player_uphill_right.png"/>
    <file source="sprites/player_uphill_left.png"/>
@@ -25,5 +26,8 @@
    <file source="background/background.png"/>
   </folder>
  </folder>
+ <file source="scene.lua"/>
+ <file source="shapes.lua"/>
+ <file source="soundmanager.lua"/>
  <file source="main.lua"/>
 </project>

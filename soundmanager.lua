@@ -8,7 +8,7 @@ function SoundManager:init()
 end
 
 function SoundManager:play()
-	self.channel = self.music:play(0, true)
+	self.channel = self.music:play(0, math.huge)
 end
 
 function SoundManager:stop()
