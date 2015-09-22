@@ -73,7 +73,7 @@ local ROAD = {
   CURVE = { NONE = 0, EASY = 2, MEDIUM = 4, HARD = 6 }
 }
 
-local function project(p, cameraX, cameraY, cameraZ, camera_depth, road_width)
+local function project(p, cameraX, cameraY, cameraZ, road_width)
 	
 	p.camera.x = (p.world.x or 0) - cameraX
 	p.camera.y = (p.world.y or 0) - cameraY
@@ -369,6 +369,7 @@ function Scene:draw_road()
 	
 	local position = self.position
 	local road_width = road_width
+	
 	local old_road = self.road
 	
 	-- Remove old road
@@ -408,6 +409,8 @@ function Scene:draw_road()
 	local x = 0
 	local dx = 0
 	
+	local sprites = Sprite.new()
+	
 	local i
 	for i = 1, draw_distance -1 do
 		local index = (base_segment.index + i) % num_segments
@@ -419,8 +422,8 @@ function Scene:draw_road()
 		local track_length = self.track_length
 		
 		-- Calculate project of p1 and p2 points that describes a segment
-		project(p1, (playerX * road_width) - x, playerY + camera_height, position, camera_depth, road_width)
-		project(p2, (playerX * road_width) - x -dx, playerY + camera_height, position, camera_depth, road_width)
+		project(p1, (playerX * road_width) - x, playerY + camera_height, position, road_width)
+		project(p2, (playerX * road_width) - x -dx, playerY + camera_height, position, road_width)
 		x = x + dx
 		dx = dx + curve
 		
@@ -433,6 +436,7 @@ function Scene:draw_road()
 			--local t1= os.clock()
 			
 			local sprite_segment = Segment.new(
+							false,
 							p1.screen.x,
 							p1.screen.y,
 							p1.screen.w, 
@@ -447,22 +451,33 @@ function Scene:draw_road()
 			maxy = p1.screen.y
 			
 			-- Draw panel sprite
-			--local panel = segment.sprites[1]
-			--panel:setScale(p1.screen.scale)
-			--panel:setPosition(p1.screen.x - 25, p1.screen.y)
-			--road:addChild(panel)
+			--[[
+			if ( i % 2 == 0 ) then
+				local panel = segment.sprites[1]
+				local spriteScale = p1.screen.scale * 1000
+				if (spriteScale < 0.7) then
+					spriteScale = 0.7
+				end
+				panel:setScale(spriteScale)
+				local offset = -1
+				panel_x =  p1.screen.x + p1.screen.w * 2
+				
+				--print(p1.screen.w)
+				
+				panel:setPosition(panel_x, p1.screen.y - panel:getWidth())
+				sprites:addChild(panel)
+			end
+			]]--
 			
 			--local t2 = os.clock() - t1
 			--print (t2)
-		end
-		
-		--print ("i ", i)
-		
+		end	
 	end
 	
 	self:addChild(road)
 	self.road = road
 	
+	road:addChild(sprites)
 	--print ("road children ", self.road:getNumChildren()) -- segments
 	
 	--local t2 = os.clock() - t1

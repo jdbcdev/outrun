@@ -10,7 +10,7 @@ local height = application:getContentHeight()
 Segment = Core.class(Mesh)
 
 -- Constructor
-function Segment:init (x1, y1, w1, x2, y2, w2, fog, color) 
+function Segment:init (is3d, x1, y1, w1, x2, y2, w2, fog, color) 
 			
 	--local t1= os.clock()
 	
@@ -61,6 +61,7 @@ function Segment:init (x1, y1, w1, x2, y2, w2, fog, color)
 			--self:addChild(polygon_lane)
 		end
 	end
+
 	
 	return self
 end

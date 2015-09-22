@@ -1,11 +1,10 @@
 <project>
- <properties autorotation="0" encryptAssets="0" fps="60" scaleMode="3" mouseToTouch="1" iosDevice="0" packageName="es.jdbc.race" logicalHeight="800" logicalWidth="480" mouseTouchOrder="0" encryptCode="1" retinaDisplay="0" touchToMouse="1" assetsOnly="0" orientation="1" architecture="1">
+ <properties windowWidth="0" assetsOnly="0" touchToMouse="1" encryptCode="1" autorotation="0" fps="60" encryptAssets="0" win_domain="giderosmobile.com" scaleMode="3" logicalHeight="800" logicalWidth="480" mouseToTouch="1" windowHeight="0" mouseTouchOrder="0" iosDevice="0" packageName="es.jdbc.race" retinaDisplay="0" architecture="1" orientation="1" win_org="GiderosMobile" osx_domain="giderosmobile.com" android_template="0" osx_org="GiderosMobile">
   <imageScales/>
  </properties>
  <folder name="fonts">
   <file source="fonts/Akashi.ttf"/>
  </folder>
- <file source="testffi.lua"/>
  <folder name="music">
   <file source="music/racer.mp3"/>
  </folder>
