@@ -51,7 +51,7 @@ function update()
 	scene:draw_road()
 	scene:update_player()
 	
-	--displayFps()
+	displayFps()
 end
 
 function onClick(event)

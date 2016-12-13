@@ -24,7 +24,7 @@ local segment_length = 200
 local position = 0 -- Camera position
 local draw_distance = 100
 local road_width = 1200
-local field_of_view = 100
+local field_of_view = 50
 
 local camera_height = 900
 local camera_depth = 1 / tan((field_of_view/2) * pi/180);
@@ -117,6 +117,11 @@ end
 -- Constructor
 function Scene:init()
 	self.position = position
+	
+	-- Layer road
+	self.layer_road = Sprite.new()
+	self:addChild(self.layer_road)
+	
 	self.road = Sprite.new()
 	self:draw_background()
 	self:reset_road()
@@ -133,13 +138,13 @@ end
 -- Draws backgrounds of the game scene
 function Scene:draw_background()
 	self.bg_sky = bg_sky
-	self:addChild(bg_sky)
+	self.layer_road:addChild(bg_sky)
 	
 	self.bg_hills = bg_hills
-	self:addChild(bg_hills)
+	self.layer_road:addChild(bg_hills)
 	
 	self.bg_trees = bg_trees
-	self:addChild(bg_trees)
+	self.layer_road:addChild(bg_trees)
 end
 
 function Scene:update_background()
@@ -177,10 +182,12 @@ function Scene:update_player()
 	local player = self.player
 	player:setTexture(self.texture_player)
 	
+	--[[
 	if (player and self:contains(player)) then
 		self:removeChild(player)
 		self:addChild(player)
-	end
+	end 
+	]]--
 end
 
 -- Returns previous Y point value
@@ -202,7 +209,6 @@ function Scene:addRoad(enter, hold, leave, curve, y)
 	local end_y = start_y + y * segment_length
 	
 	local total = enter + hold + leave
-	local i
 	for i=1, enter do
 		self:addSegment(easeIn(0, curve, i / enter), easeInOut(start_y, end_y, i/total));
 	end
@@ -374,7 +380,7 @@ function Scene:draw_road()
 	
 	-- Remove old road
 	if (old_road and self:contains(old_road)) then
-		self:removeChild(old_road)
+		self.layer_road:removeChild(old_road)
 	end
 	
 	-- Redraw a new road sprite
@@ -411,7 +417,6 @@ function Scene:draw_road()
 	
 	local sprites = Sprite.new()
 	
-	local i
 	for i = 1, draw_distance -1 do
 		local index = (base_segment.index + i) % num_segments
 		
@@ -474,7 +479,7 @@ function Scene:draw_road()
 		end	
 	end
 	
-	self:addChild(road)
+	self.layer_road:addChild(road)
 	self.road = road
 	
 	road:addChild(sprites)
